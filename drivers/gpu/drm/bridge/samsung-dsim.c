@@ -1753,11 +1753,6 @@ static int samsung_dsim_parse_dt(struct samsung_dsim *dsi)
 	struct device_node *node = dev->of_node;
 	int ret;
 
-	ret = samsung_dsim_of_read_u32(node, "samsung,pll-clock-frequency",
-				       &dsi->pll_clk_rate);
-	if (ret < 0)
-		return ret;
-
 	ret = samsung_dsim_of_read_u32(node, "samsung,burst-clock-frequency",
 				       &dsi->burst_clk_rate);
 	if (ret < 0)
@@ -1832,12 +1827,18 @@ int samsung_dsim_probe(struct platform_device *pdev)
 		if (IS_ERR(dsi->clks[i])) {
 			if (strcmp(clk_names[i], "sclk_mipi") == 0) {
 				dsi->clks[i] = devm_clk_get(dev, OLD_SCLK_MIPI_CLK_NAME);
-				if (!IS_ERR(dsi->clks[i]))
+				if (!IS_ERR(dsi->clks[i])) {
+					dsi->pll_clk_rate = clk_get_rate(dsi->clks[i]);
 					continue;
+				}
 			}
 
 			dev_info(dev, "failed to get the clock: %s\n", clk_names[i]);
 			return PTR_ERR(dsi->clks[i]);
+		}
+
+		if (strcmp(clk_names[i], "sclk_mipi") == 0) {
+			dsi->pll_clk_rate = clk_get_rate(dsi->clks[i]);
 		}
 	}
 
