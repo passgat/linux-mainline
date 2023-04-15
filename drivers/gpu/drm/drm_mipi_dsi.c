@@ -552,11 +552,18 @@ int mipi_dsi_create_packet(struct mipi_dsi_packet *packet,
 
 		packet->payload_length = msg->tx_len;
 		packet->payload = msg->tx_buf;
+		pr_info("%s payload: %ld\n", __func__,
+			packet->payload_length);
+
 	} else {
 		const u8 *tx = msg->tx_buf;
 
 		packet->header[1] = (msg->tx_len > 0) ? tx[0] : 0;
 		packet->header[2] = (msg->tx_len > 1) ? tx[1] : 0;
+
+		pr_info("%s no long packet h0: 0x%02x, h1: 0x%02x, h2: 0x%02x\n",
+			__func__, packet->header[0], packet->header[1],
+			packet->header[2]);
 	}
 
 	packet->size = sizeof(packet->header) + packet->payload_length;
